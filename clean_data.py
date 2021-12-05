@@ -1,6 +1,12 @@
 from etherscan import Etherscan
 import pandas as pd
 from pandas_profiling import ProfileReport
+import holoviews as hv
+import holoviews.operation.datashader as hd
+from holoviews.operation.datashader import rasterize
+
+from bokeh.plotting import show
+hv.extension('bokeh','matplotlib')
 
 eth = Etherscan('9QTG5UR41I61VS7TVWSUF3RP2HAXAJQ1KX')
 
@@ -20,9 +26,26 @@ amounts['Commission_value'] = transactions.min()
 df = pd.merge(df, amounts, on='Hash', how='left')
 df.drop_duplicates(subset='Hash', keep='last', inplace=True)
 df.drop(['TraceId', 'SellerReward(Eth)'], axis=1, inplace=True)
-
+df.Date = pd.to_datetime(df.Date)
+financial = df.drop(['BlockNumber', 'Hash', 'To'], axis=1)
+financial.Date = pd.to_datetime(financial.Date)
+#daily = financial.groupby(financial.Date.dt.floor('D')).sum()
+#daily['Count'] = financial.groupby(financial.Date.dt.floor('D')).count()
+hourly = financial.groupby(financial.Date.dt.floor('H')).sum()
+hourly['Day'] = hourly.index.day
+hourly['Hour'] = hourly.index.hour
+#hourly['Count'] = financial.groupby(financial.Date.dt.floor('H')).count()
+#combined = pd.merge(hourly, daily, on='Date', how='left').fillna(method='ffill')
+#acounts = df.drop(['BlockNumber', 'Hash'], axis=1)
 with pd.option_context("display.max_columns", None, 'display.width', None):
-    print(df)
+    print(hourly)
+hour_day = hv.HeatMap(hourly[['Day', 'Hour', 'Total_value']])
+show(hv.render(hour_day))
+seller_map = rasterize(hv.Scatter(df[['To', 'Seller_value']]), width=10, height=10)
+hv.output(backend="bokeh")
+hd.datashade(seller_map)
+#hv.render(seller_map)
 
-profile = ProfileReport(df, title="Pandas Profiling Report", explorative=True)
-profile.to_file("opensea_report.html")
+
+#profile = ProfileReport(financial, title="Pandas Profiling Report", explorative=True)
+#profile.to_file("opensea_report.html")
