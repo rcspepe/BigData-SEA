@@ -66,7 +66,7 @@ namespace Etherscan
             var stillInSelectedMonth = true;
             var startingBlockNumber = 13135895;
 
-            //in each loop we will collect the transactions from 300 blocks
+            //in each loop we will collect the transactions from the given number of blocks
             //probably the number of transactions for this block count will be always under 10000
             while (stillInSelectedMonth)
             {
