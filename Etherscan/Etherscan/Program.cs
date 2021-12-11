@@ -11,7 +11,7 @@ namespace Etherscan
 {
     class Program
     {
-        private const int SelectedMonth = 9;
+        private const int SelectedMonth = 7;
         private const int BlockRange = 250;
 
         static void Main(string[] args)
@@ -24,7 +24,7 @@ namespace Etherscan
         {
             var transcations = await GetTransactions();
 
-            WriteToFile(transcations, "2021_09_opensea.csv");
+            WriteToFile(transcations, "2021_07_opensea.csv");
         }
 
         private static void WriteToFile(List<Result> transcations, string fileName)
@@ -39,11 +39,11 @@ namespace Etherscan
                     {
                         if (firstLine)
                         {
-                            writer.WriteLine("BlockNumber;Hash;Date;To;SellerReward(Eth);OpenseaReward(ETH)");
+                            writer.WriteLine("BlockNumber;Hash;Date;To;SellerReward(Eth);TraceId");
                             firstLine = false;
                         }
 
-                        writer.WriteLine($"{transaction.BlockNumber};{transaction.Hash};{transaction.TransactionDate.ToString("yyyy-MM-dd HH:mm")};{transaction.To};{transaction.TransactionValue};{transaction.OpenseaReward}");
+                        writer.WriteLine($"{transaction.BlockNumber};{transaction.Hash};{transaction.TransactionDate.ToString("yyyy-MM-dd HH:mm")};{transaction.To};{transaction.TransactionValue};{transaction.TraceId}");
                     }
                 }
             }
@@ -59,12 +59,13 @@ namespace Etherscan
 
         public static async Task<List<Result>> GetTransactions()
         {
+            //12737970 the first block on 1st of July 2021
             //12935812 the first block on 1st of August 2021
             //Timestamp: 118 days 1 hr ago(Jul-31 - 2021 10:00:14 PM + UTC) GMT + 2 Aug 01 00:00:14 
             //13135896 the first block on 1st of September 2021
             var transactionList = new List<Result>();
             var stillInSelectedMonth = true;
-            var startingBlockNumber = 13135895;
+            var startingBlockNumber = 12737970;
 
             //in each loop we will collect the transactions from the given number of blocks
             //probably the number of transactions for this block count will be always under 10000
